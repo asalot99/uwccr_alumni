@@ -1,0 +1,211 @@
+.map-container {
+  height: 100vh;
+  width: 100vw;
+  background: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
+
+.floating-header {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  z-index: 1001;
+  text-align: center;
+}
+
+.floating-header h1 {
+  color: #333;
+  margin-bottom: 5px;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.floating-header p {
+  color: #666;
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+.map-legend {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 15px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+.legend-marker {
+  width: 18px;
+  height: 24px;
+  position: relative;
+  display: inline-block;
+}
+
+.legend-marker::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 24px;
+  background: var(--marker-color);
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  transform-origin: 50% 100%;
+}
+
+.legend-marker::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 6px;
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+  transform: rotate(45deg);
+}
+
+.legend-marker.current-user {
+  --marker-color: #ff0000;
+}
+
+.legend-marker.other-alumni {
+  --marker-color: #00f600;
+}
+
+.map-wrapper {
+  flex: 1;
+  position: relative;
+  height: 100vh;
+}
+
+.map-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  background: #f8f9fa;
+}
+
+.map-loading .loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+.map-loading p {
+  color: #666;
+  font-size: 16px;
+}
+
+.floating-controls {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1001;
+}
+
+.update-location-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+}
+
+.update-location-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+}
+
+/* Leaflet map customizations */
+.leaflet-container {
+  border-radius: 0;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.leaflet-popup-content {
+  margin: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.popup-content h3 {
+  margin: 0 0 5px 0;
+  color: #333;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.popup-content p {
+  margin: 0 0 8px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.current-user-badge {
+  display: inline-block;
+  background: #ff0000;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .map-header {
+    padding: 15px;
+  }
+  
+  .map-header h1 {
+    font-size: 20px;
+  }
+  
+  .map-legend {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .map-footer {
+    padding: 15px;
+  }
+} 
