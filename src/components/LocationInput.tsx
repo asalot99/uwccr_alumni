@@ -27,9 +27,10 @@ const LocationInput = () => {
   const [deviceLocation, setDeviceLocation] = useState<DeviceLocation | null>(null);
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
   const [locationPermission, setLocationPermission] = useState<'granted' | 'denied' | 'prompt' | null>(null);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
-  const searchTimeoutRef = useRef<number | null>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Check if user has already set location
   useEffect(() => {
@@ -42,44 +43,9 @@ const LocationInput = () => {
     }
   }, [navigate, isAuthenticated, user]);
 
-  // Request location permission and show notification
-  useEffect(() => {
-    if (isAuthenticated && user?.sub && !showLocationPrompt) {
-      // Check if we can request notifications
-      if ('Notification' in window && Notification.permission === 'default') {
-        // Request notification permission first
-        Notification.requestPermission().then((permission) => {
-          if (permission === 'granted') {
-            // Show notification asking for location permission
-            const notification = new Notification('UWCCR Alumni Network', {
-              body: 'Would you like to share your city to connect with nearby alumni?',
-              icon: '/vite.svg',
-              requireInteraction: true
-            });
-
-            notification.onclick = () => {
-              notification.close();
-              requestDeviceLocation();
-            };
-
-            // Auto-close notification after 10 seconds
-            setTimeout(() => {
-              notification.close();
-            }, 10000);
-          } else {
-            // If notifications are denied, directly ask for location
-            requestDeviceLocation();
-          }
-        });
-      } else {
-        // If notifications are already granted/denied, directly ask for location
-        requestDeviceLocation();
-      }
-    }
-  }, [isAuthenticated, user, showLocationPrompt]);
-
   const requestDeviceLocation = () => {
-    setShowLocationPrompt(true);
+    setIsGettingLocation(true);
+    setShowLocationPrompt(false);
     
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -87,6 +53,7 @@ const LocationInput = () => {
           const { latitude, longitude, accuracy } = position.coords;
           setDeviceLocation({ lat: latitude, lon: longitude, accuracy });
           setLocationPermission('granted');
+          setIsGettingLocation(false);
           
           // Automatically search for the location name
           reverseGeocode(latitude, longitude);
@@ -94,17 +61,20 @@ const LocationInput = () => {
         (error) => {
           console.error('Geolocation error:', error);
           setLocationPermission('denied');
+          setIsGettingLocation(false);
           setShowLocationPrompt(false);
+          alert('Unable to get your location. Please enter your city manually.');
         },
         {
           enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 60000
+          timeout: 15000,
+          maximumAge: 300000
         }
       );
     } else {
       setLocationPermission('denied');
-      setShowLocationPrompt(false);
+      setIsGettingLocation(false);
+      alert('Geolocation is not supported by this browser. Please enter your city manually.');
     }
   };
 
@@ -372,9 +342,9 @@ const LocationInput = () => {
               type="button" 
               onClick={requestDeviceLocation}
               className="location-detect-btn"
-              disabled={showLocationPrompt}
+              disabled={isGettingLocation}
             >
-              📍 Use My Current Location
+              {isGettingLocation ? '🔄 Getting Location...' : '📍 Use My Current Location'}
             </button>
           </div>
 
@@ -392,4 +362,4 @@ const LocationInput = () => {
   );
 };
 
-export default LocationInput; 
+export default LocationInput;
