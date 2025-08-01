@@ -63,7 +63,23 @@ const LocationInput = () => {
           setLocationPermission('denied');
           setIsGettingLocation(false);
           setShowLocationPrompt(false);
-          alert('Unable to get your location. Please enter your city manually.');
+          
+          let errorMessage = 'Unable to get your location. ';
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage += 'Location access was denied. Please allow location access and try again, or enter your city manually.';
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage += 'Location information is unavailable. Please enter your city manually.';
+              break;
+            case error.TIMEOUT:
+              errorMessage += 'Location request timed out. Please try again or enter your city manually.';
+              break;
+            default:
+              errorMessage += 'Please enter your city manually.';
+              break;
+          }
+          alert(errorMessage);
         },
         {
           enableHighAccuracy: true,
