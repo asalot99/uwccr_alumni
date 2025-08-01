@@ -82,6 +82,24 @@
   border-color: #667eea;
 }
 
+.form-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.form-row .form-group {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.privacy-note {
+  color: #666;
+  font-size: 13px;
+  margin: 0;
+  text-align: center;
+}
+
 .login-button {
   width: 100%;
   padding: 15px;
@@ -199,4 +217,4 @@
   min-height: 100vh;
   font-size: 18px;
   color: #667eea;
-} 
+}
