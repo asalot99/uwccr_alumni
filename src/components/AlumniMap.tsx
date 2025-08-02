@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import { useAuth0 } from '@auth0/auth0-react';
+import { useNavigate } from 'react-router-dom';
 import 'leaflet/dist/leaflet.css';
 import apiService from '../services/api';
 import './AlumniMap.css';
@@ -32,6 +33,7 @@ Icon.Default.mergeOptions({
 
 const AlumniMap = () => {
   const { user, isAuthenticated } = useAuth0();
+  const navigate = useNavigate();
   const [userLocation, setUserLocation] = useState<AlumniLocation | null>(null);
   const [allLocations, setAllLocations] = useState<AlumniLocation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -175,7 +177,7 @@ const AlumniMap = () => {
           />
           
           {allLocations.map((location, index) => {
-            const isCurrentUser = location.userId === 'demo-user-id';
+            const isCurrentUser = Boolean(user?.sub && location.userId === user.sub);
             console.log(`Rendering marker ${index}:`, location.name, 'isCurrentUser:', isCurrentUser);
             return (
               <Marker
@@ -199,7 +201,7 @@ const AlumniMap = () => {
                       <p className="bio">{location.bio}</p>
                     )}
                     <p className="location">{location.name}, {location.country}</p>
-                    {location.userId === 'demo-user-id' && (
+                    {isCurrentUser && (
                       <span className="current-user-badge">You</span>
                     )}
                   </div>
@@ -231,9 +233,11 @@ const AlumniMap = () => {
         <button 
           className="update-location-btn"
           onClick={() => {
-            const userId = 'demo-user-id';
-            localStorage.removeItem(`userLocation_${userId}`);
-            window.location.href = '/location';
+            if (user?.sub) {
+              const userId = user.sub;
+              localStorage.removeItem(`userLocation_${userId}`);
+              navigate('/location');
+            }
           }}
         >
           Update My Location
