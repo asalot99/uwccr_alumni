@@ -7,7 +7,7 @@
   justify-content: center;
   background: 
     linear-gradient(135deg, rgba(102, 126, 234, 0.75) 0%, rgba(118, 75, 162, 0.75) 100%),
-    url('https://i.imgur.com/YQK8Zxm.jpg') center/cover no-repeat;
+    url('https://images.unsplash.com/photo-1607237138185-eedd9c632b0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80') center/cover no-repeat;
   padding: 20px;
   box-sizing: border-box;
   position: relative;
