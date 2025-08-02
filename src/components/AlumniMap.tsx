@@ -149,11 +149,6 @@ const AlumniMap = () => {
     });
   };
 
-  // Demo mode - always allow access
-  if (window.location.pathname.includes('/map')) {
-    // Continue with the component
-  }
-
   if (isLoading) {
     return (
       <div className="map-loading">
