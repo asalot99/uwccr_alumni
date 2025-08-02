@@ -1,12 +1,31 @@
 .login-container {
   min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for mobile */
+  width: 100vw;
   display: flex;
   align-items: center;
   justify-content: center;
   background: 
-    linear-gradient(135deg, rgba(102, 126, 234, 0.85) 0%, rgba(118, 75, 162, 0.85) 100%),
-    url('https://images.unsplash.com/photo-1562774053-701939374585?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80') center/cover no-repeat;
+    linear-gradient(135deg, rgba(102, 126, 234, 0.75) 0%, rgba(118, 75, 162, 0.75) 100%),
+    url('https://i.imgur.com/YQK8Zxm.jpg') center/cover no-repeat;
   padding: 20px;
+  box-sizing: border-box;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Ensure full coverage on all devices */
+.login-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    linear-gradient(135deg, rgba(102, 126, 234, 0.75) 0%, rgba(118, 75, 162, 0.75) 100%),
+    url('https://i.imgur.com/YQK8Zxm.jpg') center/cover no-repeat;
+  z-index: -1;
 }
 
 .login-card {
@@ -17,6 +36,105 @@
   width: 100%;
   max-width: 400px;
   text-align: center;
+  position: relative;
+  z-index: 1;
+  margin: 0 auto;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .login-container {
+    padding: 15px;
+    align-items: flex-start;
+    padding-top: 10vh;
+  }
+  
+  .login-card {
+    padding: 30px 25px;
+    border-radius: 15px;
+    max-width: 100%;
+    width: 100%;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+  }
+  
+  .login-header h1 {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+  
+  .login-header p {
+    font-size: 14px;
+    margin-bottom: 25px;
+  }
+  
+  .form-group input {
+    padding: 12px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  .login-button {
+    padding: 12px;
+    font-size: 15px;
+  }
+  
+  .tab {
+    padding: 12px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-container {
+    padding: 10px;
+    padding-top: 5vh;
+  }
+  
+  .login-card {
+    padding: 25px 20px;
+    border-radius: 12px;
+  }
+  
+  .login-header h1 {
+    font-size: 22px;
+  }
+  
+  .form-group input {
+    padding: 10px;
+  }
+  
+  .login-button {
+    padding: 10px;
+  }
+}
+
+/* Landscape mobile adjustments */
+@media (max-height: 600px) and (orientation: landscape) {
+  .login-container {
+    padding-top: 2vh;
+    align-items: flex-start;
+  }
+  
+  .login-card {
+    padding: 20px;
+  }
+  
+  .login-header h1 {
+    font-size: 20px;
+    margin-bottom: 5px;
+  }
+  
+  .login-header p {
+    font-size: 13px;
+    margin-bottom: 15px;
+  }
+  
+  .login-tabs {
+    margin-bottom: 20px;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
 }
 
 .login-header h1 {
