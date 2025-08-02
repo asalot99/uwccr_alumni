@@ -48,14 +48,16 @@ const AlumniMap = () => {
         try {
           const location = JSON.parse(savedLocation);
           console.log('Parsed user location:', location);
-          console.log('Location structure:', {
-            name: location.name,
-            country: location.country,
-            lat: location.lat,
-            lon: location.lon,
-            userId: location.userId
-          });
-          setUserLocation(location);
+          // Enhance with Auth0 user data
+          const enhancedLocation = {
+            ...location,
+            userId: userId,
+            firstName: user.given_name || user.name?.split(' ')[0] || 'User',
+            lastName: user.family_name || user.name?.split(' ').slice(1).join(' ') || '',
+            email: user.email
+          };
+          console.log('Enhanced user location:', enhancedLocation);
+          setUserLocation(enhancedLocation);
         } catch (error) {
           console.error('Error parsing user location:', error);
         }
@@ -99,20 +101,20 @@ const AlumniMap = () => {
         // Always add current user's location if it exists
         if (userLocation) {
           console.log('Adding user location to map:', userLocation);
-          // Ensure user location has the correct structure
+          // Use the actual user location data with Auth0 info
           const userLocationFormatted: AlumniLocation = {
             name: userLocation.name,
             country: userLocation.country,
             lat: userLocation.lat,
             lon: userLocation.lon,
-            userId: 'demo-user-id',
+            userId: userLocation.userId, // Use actual Auth0 user ID
             timestamp: userLocation.timestamp,
-            firstName: 'Demo',
-            lastName: 'User'
+            firstName: userLocation.firstName || 'User',
+            lastName: userLocation.lastName || ''
           };
           
           // Remove any existing user location to avoid duplicates
-          const filteredLocations = apiLocations.filter(loc => loc.userId !== 'demo-user-id');
+          const filteredLocations = apiLocations.filter(loc => loc.userId !== userLocation.userId);
           const finalLocations = [...filteredLocations, userLocationFormatted];
           console.log('Final locations array:', finalLocations);
           setAllLocations(finalLocations);
@@ -241,4 +243,4 @@ const AlumniMap = () => {
   );
 };
 
-export default AlumniMap; 
+export default AlumniMap;
