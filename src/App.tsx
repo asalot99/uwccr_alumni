@@ -87,6 +87,8 @@ function App() {
       authorizationParams={{
         redirect_uri: `${window.location.origin}/callback`
       }}
+      cacheLocation="memory"
+      useRefreshTokens={false}
     >
       <Router>
         <div className="App">

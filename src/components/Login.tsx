@@ -1,10 +1,10 @@
 import { useAuth0 } from '@auth0/auth0-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
 
 const Login = () => {
-  const { loginWithRedirect, loginWithPopup, isAuthenticated } = useAuth0();
+  const { loginWithRedirect, loginWithPopup, isAuthenticated, logout } = useAuth0();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -14,11 +14,17 @@ const Login = () => {
   const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
   const navigate = useNavigate();
 
-  // If already authenticated, redirect to location input
-  if (isAuthenticated) {
-    navigate('/location');
-    return null;
-  }
+  // Force logout if user is authenticated when reaching login page
+  useEffect(() => {
+    if (isAuthenticated) {
+      console.log('User is authenticated on login page, logging out...');
+      logout({
+        logoutParams: {
+          returnTo: window.location.origin + '/login'
+        }
+      });
+    }
+  }, [isAuthenticated, logout]);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
