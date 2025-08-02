@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import Login from './components/Login';
 import LocationInput from './components/LocationInput';
 import AlumniMap from './components/AlumniMap';
+import { performOneTimeCleanup } from './utils/clearAuthCache';
 import './App.css';
 
 // Auth Callback component
@@ -55,6 +56,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 function App() {
+  // Perform one-time cleanup of cached authentication data
+  useEffect(() => {
+    performOneTimeCleanup();
+  }, []);
+
   // Get Auth0 configuration from environment variables
   const domain = import.meta.env.VITE_AUTH0_DOMAIN;
   const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID;
