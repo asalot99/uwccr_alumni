@@ -260,7 +260,12 @@ const LocationInput = () => {
     }
 
     // Save user location
-    const userId = user?.sub || 'demo-user-id';
+    if (!user?.sub) {
+      alert('Please log in to save your location');
+      return;
+    }
+    
+    const userId = user.sub;
     const userLocation = {
       ...selectedLocation,
       userId: userId,
