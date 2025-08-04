@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check Local User Data</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { background: #f5f5f5; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .user { background: #e8f4fd; padding: 10px; margin: 5px 0; border-radius: 3px; }
+        .no-data { color: #666; font-style: italic; }
+        .data { color: #333; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Local User Data Analysis</h1>
+    <div id="results"></div>
+
+    <script>
+        function checkLocalStorage() {
+            const results = document.getElementById('results');
+            
+            // Check for userLocation_* keys
+            const allKeys = Object.keys(localStorage);
+            const userLocationKeys = allKeys.filter(key => key.startsWith('userLocation_'));
+            
+            let html = '<div class="result">';
+            html += '<h2>📱 localStorage Analysis</h2>';
+            html += `<p><strong>Total localStorage keys:</strong> ${allKeys.length}</p>`;
+            html += `<p><strong>User location keys found:</strong> ${userLocationKeys.length}</p>`;
+            
+            if (userLocationKeys.length === 0) {
+                html += '<p class="no-data">❌ No userLocation_* keys found</p>';
+                html += '<p class="no-data">This means no authenticated users have saved their location locally</p>';
+            } else {
+                html += '<h3>👥 Found User Locations:</h3>';
+                userLocationKeys.forEach((key, index) => {
+                    const data = localStorage.getItem(key);
+                    html += `<div class="user">`;
+                    html += `<h4>User ${index + 1}: ${key}</h4>`;
+                    try {
+                        const parsed = JSON.parse(data);
+                        html += `<div class="data">`;
+                        html += `<p><strong>Name:</strong> ${parsed.name || 'Not set'}</p>`;
+                        html += `<p><strong>Country:</strong> ${parsed.country || 'Not set'}</p>`;
+                        html += `<p><strong>Coordinates:</strong> ${parsed.lat}, ${parsed.lon}</p>`;
+                        html += `<p><strong>User ID:</strong> ${parsed.userId}</p>`;
+                        html += `<p><strong>Timestamp:</strong> ${parsed.timestamp}</p>`;
+                        html += `</div>`;
+                    } catch (e) {
+                        html += `<p class="no-data">❌ Invalid JSON data</p>`;
+                    }
+                    html += `</div>`;
+                });
+            }
+            
+            // Check for other Auth0 related keys
+            const auth0Keys = allKeys.filter(key => 
+                key.includes('auth0') || 
+                key.includes('Auth0') || 
+                key.includes('authToken') ||
+                key.includes('user')
+            );
+            
+            html += '<h3>🔐 Auth-related keys:</h3>';
+            if (auth0Keys.length === 0) {
+                html += '<p class="no-data">No auth-related keys found</p>';
+            } else {
+                auth0Keys.forEach(key => {
+                    html += `<p>- ${key}</p>`;
+                });
+            }
+            
+            html += '</div>';
+            
+            // Summary
+            html += '<div class="result">';
+            html += '<h2>📊 Summary</h2>';
+            html += `<p><strong>Database users:</strong> 0 (from previous check)</p>`;
+            html += `<p><strong>Local users:</strong> ${userLocationKeys.length}</p>`;
+            html += '<p><strong>Conclusion:</strong> ';
+            if (userLocationKeys.length === 0) {
+                html += 'No authenticated users have set their location yet, or they cleared their browser data.</p>';
+            } else {
+                html += `${userLocationKeys.length} user(s) have set their location locally, but these locations are not saved to the database for other users to see.</p>';
+            }
+            html += '</div>';
+            
+            results.innerHTML = html;
+        }
+        
+        // Run the check when page loads
+        checkLocalStorage();
+    </script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
+import { alumniService } from '../services/supabase';
 import './LocationInput.css';
 
 interface LocationSuggestion {
@@ -260,7 +261,7 @@ const LocationInput = () => {
     }
 
     // Save user location
-    if (!user?.sub) {
+    if (!user?.sub || !user?.email) {
       alert('Please log in to save your location');
       return;
     }
@@ -272,10 +273,42 @@ const LocationInput = () => {
       timestamp: new Date().toISOString()
     };
 
+    // Save to localStorage for immediate access
     localStorage.setItem(`userLocation_${userId}`, JSON.stringify(userLocation));
     
-    // In a real app, you'd save this to your backend
-    // await saveUserLocation(userLocation);
+    // Save to Supabase database so other users can see this location
+    console.log('💾 Saving location to Supabase...');
+    setIsLoading(true);
+    
+    try {
+      const alumniData = {
+        first_name: user.given_name || user.name?.split(' ')[0] || 'Alumni',
+        last_name: user.family_name || user.name?.split(' ').slice(1).join(' ') || 'User',
+        email: user.email,
+        location_name: selectedLocation.name,
+        location_country: selectedLocation.country,
+        location_lat: selectedLocation.lat,
+        location_lon: selectedLocation.lon,
+        bio: '',
+        current_company: '',
+        job_title: ''
+      };
+      
+      const result = await alumniService.upsertAlumni(alumniData);
+      
+      if (result.success) {
+        console.log('✅ Location saved to database successfully!', result.data);
+        alert('🎉 Your location has been saved! Other alumni can now see you on the map.');
+      } else {
+        console.error('❌ Failed to save to database:', result.error);
+        alert('⚠️ Your location was saved locally, but we couldn\'t save it to the shared database. You may not be visible to other users.');
+      }
+    } catch (error) {
+      console.error('❌ Error saving to Supabase:', error);
+      alert('⚠️ Your location was saved locally, but we couldn\'t save it to the shared database. You may not be visible to other users.');
+    } finally {
+      setIsLoading(false);
+    }
     
     navigate('/map');
   };

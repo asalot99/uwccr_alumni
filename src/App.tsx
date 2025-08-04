@@ -97,6 +97,9 @@ function App() {
             <Route path="/callback" element={<AuthCallback />} />
             <Route path="/location" element={<ProtectedRoute><LocationInput /></ProtectedRoute>} />
             <Route path="/map" element={<ProtectedRoute><AlumniMap /></ProtectedRoute>} />
+            {/* Demo routes for testing */}
+            <Route path="/demo/location" element={<LocationInput />} />
+            <Route path="/demo/map" element={<AlumniMap />} />
             <Route path="/" element={<Navigate to="/login" />} />
           </Routes>
         </div>

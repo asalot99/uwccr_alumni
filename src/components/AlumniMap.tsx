@@ -5,6 +5,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { useNavigate } from 'react-router-dom';
 import 'leaflet/dist/leaflet.css';
 import apiService from '../services/api';
+import { alumniService } from '../services/supabase';
 import './AlumniMap.css';
 
 interface AlumniLocation {
@@ -39,7 +40,24 @@ const AlumniMap = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (isAuthenticated && user?.sub) {
+    // Check if we're in demo mode (no auth required)
+    const isDemoMode = window.location.pathname.includes('/demo');
+    
+    if (isDemoMode) {
+      // Demo mode: create a sample user location
+      console.log('Demo mode: creating sample user location');
+      const demoLocation: AlumniLocation = {
+        name: 'San Francisco',
+        country: 'United States',
+        lat: 37.7749,
+        lon: -122.4194,
+        userId: 'demo-user',
+        timestamp: new Date().toISOString(),
+        firstName: 'Demo',
+        lastName: 'User'
+      };
+      setUserLocation(demoLocation);
+    } else if (isAuthenticated && user?.sub) {
       const userId = user.sub;
       
       // Load user's location
@@ -75,30 +93,32 @@ const AlumniMap = () => {
   }, [userLocation]);
 
   const loadAllLocations = async () => {
-    console.log('Loading all locations from API...');
+    console.log('Loading all locations from Supabase...');
     
     try {
-      // Fetch real alumni data from API
-      const response = await apiService.getMapData();
-      console.log('API response:', response);
+      // Fetch real alumni data from Supabase
+      const response = await alumniService.getAllAlumni();
+      console.log('Supabase response:', response);
       
       if (response.success && response.alumni) {
-        const apiLocations: AlumniLocation[] = response.alumni.map((alumni: any) => ({
-          name: alumni.name,
-          country: alumni.location.country,
-          lat: alumni.location.lat,
-          lon: alumni.location.lon,
-          userId: alumni.id,
-          timestamp: alumni.lastActive,
+        const supabaseLocations: AlumniLocation[] = response.alumni.map((alumni: any) => ({
+          name: alumni.location_name,
+          country: alumni.location_country,
+          lat: alumni.location_lat,
+          lon: alumni.location_lon,
+          userId: alumni.email, // Use email as identifier since we don't have auth0_id
+          timestamp: alumni.last_active,
           // Additional data for popup
-          firstName: alumni.name.split(' ')[0],
-          lastName: alumni.name.split(' ').slice(1).join(' '),
-          graduationYear: alumni.graduationYear,
+          firstName: alumni.first_name,
+          lastName: alumni.last_name,
+          graduationYear: alumni.graduation_year,
           program: alumni.program,
           bio: alumni.bio,
-          currentCompany: alumni.currentCompany,
-          jobTitle: alumni.jobTitle
+          currentCompany: alumni.current_company,
+          jobTitle: alumni.job_title
         }));
+
+        console.log('Loaded alumni from Supabase:', supabaseLocations);
 
         // Always add current user's location if it exists
         if (userLocation) {
@@ -115,23 +135,111 @@ const AlumniMap = () => {
             lastName: userLocation.lastName || ''
           };
           
-          // Remove any existing user location to avoid duplicates
-          const filteredLocations = apiLocations.filter(loc => loc.userId !== userLocation.userId);
+          // Remove any existing user location to avoid duplicates (match by email if available)
+          const userEmail = user?.email;
+          const filteredLocations = userEmail 
+            ? supabaseLocations.filter(loc => loc.userId !== userEmail)
+            : supabaseLocations;
           const finalLocations = [...filteredLocations, userLocationFormatted];
           console.log('Final locations array:', finalLocations);
           setAllLocations(finalLocations);
         } else {
-          console.log('No user location, setting only API locations');
-          setAllLocations(apiLocations);
+          console.log('No user location, setting only Supabase locations');
+          setAllLocations(supabaseLocations);
         }
       } else {
-        console.error('API response error:', response);
-        setAllLocations([]);
+        console.error('Supabase response error:', response);
+        // Try fallback to API
+        console.log('Trying fallback to API...');
+        const apiResponse = await apiService.getMapData();
+        if (apiResponse.success && apiResponse.alumni) {
+          const apiLocations: AlumniLocation[] = apiResponse.alumni.map((alumni: any) => ({
+            name: alumni.name,
+            country: alumni.location.country,
+            lat: alumni.location.lat,
+            lon: alumni.location.lon,
+            userId: alumni.id,
+            timestamp: alumni.lastActive,
+            firstName: alumni.name.split(' ')[0],
+            lastName: alumni.name.split(' ').slice(1).join(' '),
+            graduationYear: alumni.graduationYear,
+            program: alumni.program,
+            bio: alumni.bio,
+            currentCompany: alumni.currentCompany,
+            jobTitle: alumni.jobTitle
+          }));
+          setAllLocations(apiLocations);
+        } else {
+          setAllLocations([]);
+        }
       }
     } catch (error) {
-      console.error('Error loading alumni data:', error);
-      // Fallback to empty array if API fails
-      setAllLocations([]);
+      console.error('Error loading alumni data from Supabase:', error);
+      
+      // Fallback to demo data if API fails
+      const demoAlumniLocations: AlumniLocation[] = [
+        {
+          name: 'London',
+          country: 'United Kingdom',
+          lat: 51.5074,
+          lon: -0.1278,
+          userId: 'demo-alumni-1',
+          timestamp: new Date().toISOString(),
+          firstName: 'Sarah',
+          lastName: 'Johnson',
+          graduationYear: 2018,
+          program: 'International Baccalaureate',
+          currentCompany: 'Google',
+          jobTitle: 'Software Engineer'
+        },
+        {
+          name: 'Tokyo',
+          country: 'Japan',
+          lat: 35.6762,
+          lon: 139.6503,
+          userId: 'demo-alumni-2',
+          timestamp: new Date().toISOString(),
+          firstName: 'Hiroshi',
+          lastName: 'Tanaka',
+          graduationYear: 2019,
+          program: 'International Baccalaureate',
+          currentCompany: 'Sony',
+          jobTitle: 'Product Manager'
+        },
+        {
+          name: 'Sydney',
+          country: 'Australia',
+          lat: -33.8688,
+          lon: 151.2093,
+          userId: 'demo-alumni-3',
+          timestamp: new Date().toISOString(),
+          firstName: 'Emma',
+          lastName: 'Wilson',
+          graduationYear: 2020,
+          program: 'International Baccalaureate',
+          currentCompany: 'Atlassian',
+          jobTitle: 'UX Designer'
+        }
+      ];
+
+      // Add user location if it exists
+      if (userLocation) {
+        console.log('Adding user location to demo data:', userLocation);
+        const userLocationFormatted: AlumniLocation = {
+          name: userLocation.name,
+          country: userLocation.country,
+          lat: userLocation.lat,
+          lon: userLocation.lon,
+          userId: userLocation.userId,
+          timestamp: userLocation.timestamp,
+          firstName: userLocation.firstName || 'User',
+          lastName: userLocation.lastName || ''
+        };
+        
+        setAllLocations([...demoAlumniLocations, userLocationFormatted]);
+      } else {
+        setAllLocations(demoAlumniLocations);
+      }
     }
     
     setIsLoading(false);
@@ -141,11 +249,11 @@ const AlumniMap = () => {
     console.log('Creating icon for current user:', isCurrentUser);
     return new Icon({
       iconUrl: isCurrentUser 
-        ? 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAyNCAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJjLTUuNTIgMC0xMCA0LjQ4LTEwIDEwIDAgNyA5IDE4IDEwIDE4czEwLTExIDEwLTE4YzAtNS41Mi00LjQ4LTEwLTEwLTEweiIgZmlsbD0iI0ZGMDAwMCIvPgo8Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSI0IiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4=' // Red Google Maps pin
-        : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAyNCAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJjLTUuNTIgMC0xMCA0LjQ4LTEwIDEwIDAgNyA5IDE4IDEwIDE4czEwLTExIDEwLTE4YzAtNS41Mi00LjQ4LTEwLTEwLTEweiIgZmlsbD0iIzAwRjYwMCIvPgo8Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSI0IiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4=', // Green Google Maps pin
-      iconSize: [24, 32],
-      iconAnchor: [12, 32],
-      popupAnchor: [0, -32]
+        ? 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiIGZpbGw9IiNGRjAwMDAiIHN0cm9rZT0iI0ZGRkZGRiIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjQiIGZpbGw9IiNGRkZGRkYiLz4KPC9zdmc+' // Red circle
+        : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiIGZpbGw9IiMwMEY2MDAiIHN0cm9rZT0iI0ZGRkZGRiIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjQiIGZpbGw9IiNGRkZGRkYiLz4KPC9zdmc+', // Green circle
+      iconSize: [24, 24],
+      iconAnchor: [12, 12],
+      popupAnchor: [0, -12]
     });
   };
 
@@ -172,7 +280,10 @@ const AlumniMap = () => {
           />
           
           {allLocations.map((location, index) => {
-            const isCurrentUser = Boolean(user?.sub && location.userId === user.sub);
+            const isDemoMode = window.location.pathname.includes('/demo');
+            const isCurrentUser = isDemoMode 
+              ? location.userId === 'demo-user'
+              : Boolean(user?.sub && location.userId === user.sub);
             console.log(`Rendering marker ${index}:`, location.name, 'isCurrentUser:', isCurrentUser);
             return (
               <Marker

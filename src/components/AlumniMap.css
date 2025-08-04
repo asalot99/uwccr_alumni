@@ -53,42 +53,19 @@
 }
 
 .legend-marker {
-  width: 18px;
-  height: 24px;
-  position: relative;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid white;
   display: inline-block;
 }
 
-.legend-marker::before {
-  content: '';
-  position: absolute;
-  width: 18px;
-  height: 24px;
-  background: var(--marker-color);
-  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-  border-radius: 50% 50% 50% 0;
-  transform: rotate(-45deg);
-  transform-origin: 50% 100%;
-}
-
-.legend-marker::after {
-  content: '';
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  width: 6px;
-  height: 6px;
-  background: white;
-  border-radius: 50%;
-  transform: rotate(45deg);
-}
-
 .legend-marker.current-user {
-  --marker-color: #ff0000;
+  background: #ff0000;
 }
 
 .legend-marker.other-alumni {
-  --marker-color: #00f600;
+  background: #00f600;
 }
 
 .map-wrapper {
@@ -208,4 +185,4 @@
   .map-footer {
     padding: 15px;
   }
-} 
+}
